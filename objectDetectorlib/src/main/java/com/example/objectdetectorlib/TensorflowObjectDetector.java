@@ -21,12 +21,10 @@ import java.util.List;
 
 public class TensorflowObjectDetector {
 
-    private static int rotation = 0;
+    private int previewWidth = 0;
+    private int previewHeight = 0;
 
-    private static int previewWidth = 0;
-    private static int previewHeight = 0;
-
-    private static final Logger LOGGER = new Logger();
+    private final Logger LOGGER = new Logger();
 
     // Configuration values for object detection model.
     //image input size
@@ -46,45 +44,19 @@ public class TensorflowObjectDetector {
     // is need keep aaspect?
     private static final boolean MAINTAIN_ASPECT = false;
     // not use
-    private static Integer sensorOrientation;
+    private Integer sensorOrientation;
     //detctor
-    public static Classifier detector;
+    private Classifier detector;
     //processing time per image
-    private static long lastProcessingTimeMs;
-    private static Bitmap rgbFrameBitmap = null;
-    private static Bitmap croppedBitmap = null;
+    private long lastProcessingTimeMs;
+    private Bitmap rgbFrameBitmap = null;
+    private Bitmap croppedBitmap = null;
 
-    private static long timestamp = 0;
+    private long timestamp = 0;
 
-    private static Matrix frameToCropTransform;
-    private static Matrix cropToFrameTransform;
+    private Matrix frameToCropTransform;
+    private Matrix cropToFrameTransform;
 
-    /*
-     *  object detection main function
-     */
-    public static List<Classifier.Recognition> processing(Context context, Bitmap imageBitmap){
-        int imageWidth = imageBitmap.getWidth();
-        int imageHeight = imageBitmap.getHeight();
-        LOGGER.i("image size:"+imageWidth+","+imageHeight);
-        if(initialiseDetector(context, imageWidth, imageHeight, rotation)){
-            return processImage(imageBitmap);
-        }
-        return null;
-    }
-
-    /*
-     *  draw the detection result on image
-     */
-    public static void drawObjectResult(Classifier.Recognition result, Canvas canvas, Paint paint){
-        //draw the object edge rect
-        RectF rectF = result.getLocation();
-        canvas.drawRect(rectF, paint);
-        //draw the object label(class and confidence)
-        String label = "";
-        label += result.getTitle() + " ";
-        label += String.format("(%.1f%%) ", result.getConfidence() * 100.0f);
-        canvas.drawText(label, (int)(rectF.left), (int)(rectF.top), paint);
-    }
 
     /*
      *   read the file from asset folder as bitmap format
@@ -104,12 +76,26 @@ public class TensorflowObjectDetector {
         return bitmap;
     }
 
-    private static int getScreenOrientation() { return 0; }
+    /*
+     *  draw the detection result on image
+     */
+    public static void drawObjectResult(Classifier.Recognition result, Canvas canvas, Paint paint){
+        //draw the object edge rect
+        RectF rectF = result.getLocation();
+        canvas.drawRect(rectF, paint);
+        //draw the object label(class and confidence)
+        String label = "";
+        label += result.getTitle() + " ";
+        label += String.format("(%.1f%%) ", result.getConfidence() * 100.0f);
+        canvas.drawText(label, (int)(rectF.left), (int)(rectF.top), paint);
+    }
+
+    private int getScreenOrientation() { return 0; }
 
     /*
      *   initial the object detector
      */
-    private static boolean initialiseDetector(Context context, final int imageWidth, final int imageHeight, final int rotation) {
+    public boolean initialiseDetector(Context context, final int imageWidth, final int imageHeight, final int rotation) {
 
         int cropSize;
         try
@@ -144,7 +130,7 @@ public class TensorflowObjectDetector {
     /*
         process one image by object detection model
      */
-    private static List<Classifier.Recognition> processImage(Bitmap currentFrameBmpTemp){
+    public List<Classifier.Recognition> processImage(Bitmap currentFrameBmpTemp){
 
         ++timestamp;
         final long currTimestamp = timestamp;

@@ -1,5 +1,6 @@
 package com.example.tf_objectdetection;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.objectdetectorlib.Classifier;
+import com.example.objectdetectorlib.TensorFlowObjectDetectionAPIModel;
 import com.example.objectdetectorlib.TensorflowObjectDetector;
 
 import java.util.List;
@@ -39,11 +41,27 @@ public class MainActivity extends AppCompatActivity
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(5);
 
-        List<Classifier.Recognition> mappedRecognitions = TensorflowObjectDetector.processing(this, imageBitMap);
+        List<Classifier.Recognition> mappedRecognitions = processing(this, imageBitMap);
         for (Classifier.Recognition result : mappedRecognitions) {
             TensorflowObjectDetector.drawObjectResult(result, canvas, paint);
             textView.append(result.toString()+"\n");
         }
         imgView.setImageBitmap(tmpImageBitMap);
     }
+
+
+    /*
+     * use tfDetector process image
+     */
+    public List<Classifier.Recognition> processing(Context context, Bitmap bitmap){
+        int imageWidth = bitmap.getWidth();
+        int imageHeight = bitmap.getHeight();
+        int rotation = 0;
+        TensorflowObjectDetector tfDetector = new TensorflowObjectDetector();
+        if(tfDetector.initialiseDetector(context, imageWidth, imageHeight, rotation)){
+            return tfDetector.processImage(bitmap);
+        }
+        return null;
+    }
+
 }
